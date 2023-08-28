@@ -110,9 +110,9 @@ def main():
             # st.write(response)
           
         if st.session_state.prompts:
-            for i in range(len(st.session_state.responses)-1,-1, -1):
+            for i in range(len(st.session_state.responses)-1, -1, -1):
                 
-                message(st.session_state.prompts[i], is_user=True, key=str(i) + '_user', seed=83)
+                message(st.session_state.prompts[i], is_user=True, key=str(i) + '_user', seed=77)
                 message(st.session_state.responses[i], key=str(i), seed='Milo')
 
 
