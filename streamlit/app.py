@@ -10,6 +10,12 @@ from dotenv import load_dotenv
 import pickle
 import os
 
+from langchain.llms import OpenAI
+from langchain.chains.question_answering import load_qa_chain
+from langchain.callbacks import get_openai_callback
+
+from streamlit_chat import message
+
 
 # Sidebar contents
 with st.sidebar:
@@ -24,7 +30,7 @@ with st.sidebar:
  
     ''')
     add_vertical_space(5)
-    st.write('test version 1.0 created by Raymond')
+    st.write('test version 1.1 created by Raymond')
     
 
 
@@ -81,6 +87,59 @@ def main():
             with open(f"{store_name}.pkl", "wb") as f:
                 pickle.dump(VectorStore, f)
             st.write("embedding is computed from server")
+
+        # accept user's query
+        query = st.text_input("Ask questions about the PDF files:")
+        # st.write(query)
+
+        if 'prompts' not in st.session_state:
+            st.session_state.prompts = []
+        if 'responses' not in st.session_state:
+            st.session_state.responses = []
+
+        if query:
+            docs = VectorStore.similarity_search(query=query, k=3)
+
+            llm = OpenAI(model_name='gpt-3.5-turbo')
+            chain = load_qa_chain(llm=llm, chain_type="stuff")
+            with get_openai_callback() as cb:
+                response = chain.run(input_documents=docs, question=query)
+                print(cb)
+                st.session_state.prompts.append(query)
+                st.session_state.responses.append(response)
+            # st.write(response)
+          
+        if st.session_state.prompts:
+            for i in range(len(st.session_state.responses)-1,-1, -1):
+                
+                message(st.session_state.prompts[i], is_user=True, key=str(i) + '_user', seed=83)
+                message(st.session_state.responses[i], key=str(i), seed='Milo')
+
+
+        # resp_text = []
+        # resp_text.append(response)
+
+        # st.write("previously asked question:")
+        # st.write(resp_text)
+
+        # if 'prompts' not in st.session_state:
+        #     st.session_state.prompts = []
+        # if 'responses' not in st.session_state:
+        #     st.session_state.responses = []
+        # def send_click():
+        #     if st.session_state.user != '':
+        #         prompt = st.session_state.user
+        #         if prompt:
+        #             docs = knowledge_base.similarity_search(prompt)
+        #         llm = OpenAI()
+        #         chain = load_qa_chain(llm, chain_type="stuff")
+        #         with get_openai_callback() as cb:
+        #             response = chain. run(input_documents=docs, question=prompt)
+        #         st.session_state.prompts.append(prompt)
+        #         st.session_state.responses.append(response)
+
+        
+
 
 
 
