@@ -22,6 +22,8 @@ from streamlit_chat import message
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 
+from langchain.llms import HuggingFaceHub
+
 # Sidebar contents
 with st.sidebar:
     st.title('Chatbot of Performix')
@@ -43,6 +45,7 @@ def main():
     st.header("Customized Chatbot with PDF files")
 
     load_dotenv()
+    
 
     # upload the pdf files:
     pdf = st.file_uploader("Please upload your PDF files:", type='pdf')
@@ -103,7 +106,7 @@ def main():
             st.session_state.responses = []
 
         if query:
-            docs = VectorStore.similarity_search(query=query, fetch_k=4, k=1)
+            docs = VectorStore.similarity_search(query=query,  k=3)
             # Here is an example of how to set fetch_k parameter when calling similarity_search. 
             # Usually you would want the fetch_k parameter >> k parameter. 
             # This is because the fetch_k parameter is the number of documents that will be fetched before filtering. 
@@ -112,9 +115,19 @@ def main():
             # https://api.python.langchain.com/en/latest/vectorstores/langchain.vectorstores.faiss.FAISS.html#langchain.vectorstores.faiss.FAISS.similarity_search
             
             # try different k value
+            # fetch_k=4, k=1
             # check the filter arg
 
+            # llm = OpenAI(model_name='gpt-3.5-turbo')
+            
+            # hugging face
+            llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature": 0.5, "max_length": 64})
+            # https://python.langchain.com/docs/integrations/llms/huggingface_hub
+            
+            # gpt-4
             llm = OpenAI(model_name='gpt-3.5-turbo')
+
+
             chain = load_qa_chain(llm=llm, chain_type="stuff")
             with get_openai_callback() as cb:
                 response = chain.run(input_documents=docs, question=query)
