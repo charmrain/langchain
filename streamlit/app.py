@@ -11,11 +11,16 @@ import pickle
 import os
 
 from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks import get_openai_callback
 
 from streamlit_chat import message
 
+
+# from langchain.evaluation.qa import QAGenerateChain
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import LLMChain
 
 # Sidebar contents
 with st.sidebar:
@@ -98,22 +103,36 @@ def main():
             st.session_state.responses = []
 
         if query:
-            docs = VectorStore.similarity_search(query=query, k=3)
+            docs = VectorStore.similarity_search(query=query, fetch_k=4, k=1)
+            # Here is an example of how to set fetch_k parameter when calling similarity_search. 
+            # Usually you would want the fetch_k parameter >> k parameter. 
+            # This is because the fetch_k parameter is the number of documents that will be fetched before filtering. 
+            # If you set fetch_k to a low number, you might not get enough documents to filter from.
+            # https://python.langchain.com/docs/integrations/vectorstores/faiss
+            # https://api.python.langchain.com/en/latest/vectorstores/langchain.vectorstores.faiss.FAISS.html#langchain.vectorstores.faiss.FAISS.similarity_search
+            
+            # try different k value
+            # check the filter arg
 
             llm = OpenAI(model_name='gpt-3.5-turbo')
             chain = load_qa_chain(llm=llm, chain_type="stuff")
             with get_openai_callback() as cb:
                 response = chain.run(input_documents=docs, question=query)
+                # meta data test
+                # test more argument in chain.run
+                
                 print(cb)
                 st.session_state.prompts.append(query)
                 st.session_state.responses.append(response)
             # st.write(response)
           
-        if st.session_state.prompts:
+        if st.session_state.responses:
             for i in range(len(st.session_state.responses)-1, -1, -1):
                 
-                message(st.session_state.prompts[i], is_user=True, key=str(i) + '_user', seed=77)
-                message(st.session_state.responses[i], key=str(i), seed='Milo')
+                message(st.session_state.prompts[i], is_user=True, key=str(i) + '_user', avatar_style="adventurer",seed=77)
+                message(st.session_state.responses[i], key=str(i), avatar_style="funEmoji", seed='Aneka')
+
+        
 
 
         # resp_text = []
@@ -137,6 +156,81 @@ def main():
         #             response = chain. run(input_documents=docs, question=prompt)
         #         st.session_state.prompts.append(prompt)
         #         st.session_state.responses.append(response)
+
+        # hard code questions:
+    #     examples = [
+    # {
+    #     "query": "Is there any victim dead?",
+    #     "answer": "No"
+    # },
+    # {
+    #     "query": "How many people injured?",
+    #     "answer": "8"
+    # },
+    # {
+    #     "query": "How many teenager injured?",
+    #     "answer": "5"
+    # },
+    # {
+    #     "query": "Which city did this shooting happen?",
+    #     "answer": "Minneapolis"
+    # },
+    # {
+    #     "query": "who is Mahmoud Elmi?",
+    #     "answer": "a small grocery owner"
+    # },
+    # {
+    #     "query": "who is Mahmoud Elmi?",
+    #     "answer": "a small grocery owner"
+    # },
+    # {
+    #     "query": "Is there a gun shot murder according to Susan Solarz",
+    #     "answer": "No"
+    # },
+    # {
+    #     "query": "Which date did the shoot happen",
+    #     "answer": "AUGUST 20, 2023"
+    # },
+    # {
+    #     "query": "Which news agency contribute to this report",
+    #     "answer": "CBS MINNESOTA and WCCO"
+    # }
+
+    #         ]
+
+    #     st.write(examples)    
+    #     print(examples)
+    #     # example_gen_chain = QAGenerateChain.from_llm(ChatOpenAI())
+    #     # # new_examples = example_gen_chain.apply_and_parse(VectorStore)
+
+    #     llm = ChatOpenAI(model_name='gpt-3.5-turbo')
+    #     # chain = LLMChain(llm=llm, chain_type="stuff")
+    #     # chain = load_qa_chain(llm=llm, chain_type="stuff")
+
+        
+
+    #     # st.write(examples[0]["answer"])
+    #     query = examples[0]["query"]
+    #     docs = VectorStore.similarity_search(query=query, k=3)
+
+    #     response = chain.apply(input_documents=docs, question=query)
+    #     print(response)
+
+      
+
+    #     from langchain.evaluation.qa import QAEvalChain
+    #     llm = ChatOpenAI(temperature=0)
+    #     eval_chain = QAEvalChain.from_llm(llm)
+    #     predictions = chain.apply(question=query, input_documents=docs)
+
+      
+
+    #     graded_outputs = eval_chain.evaluate(examples[0]["answer"], response)
+
+
+
+
+    
 
         
 
