@@ -1,7 +1,7 @@
 import os
 import sys
-
 import openai
+
 from langchain.chains import ConversationalRetrievalChain, RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import DirectoryLoader, TextLoader
@@ -10,18 +10,23 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 from langchain.llms import OpenAI
 from langchain.vectorstores import Chroma
+from langchain.document_loaders import PyPDFLoader
 
 
 
 def data_ingress():
     """ this compenent aims to incorprate multiple pdf files
-    those files can provide the basic information to chatbot,
+    those files can provide the basic information to chatbots,
     when the chatbox answer any questions, it will use the information 
     that given by the pdf files
 
     input: pdf.files
     output: an object that langchain can digest
     """
+
+    loader = PyPDFLoader("*.pdf")
+    pages = loader.load_and_split()
+
     pass
 
 

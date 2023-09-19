@@ -67,6 +67,8 @@ def main():
             chunk_overlap=200,
             length_function=len
             )
+            # chunk_size=500,
+            # chunk_overlap=0,
         
         chunks = text_splitter.split_text(text=text)
 
@@ -118,14 +120,16 @@ def main():
             # fetch_k=4, k=1
             # check the filter arg
 
-            # llm = OpenAI(model_name='gpt-3.5-turbo')
+            llm = OpenAI(model_name='gpt-3.5-turbo')
             
             # hugging face
-            llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature": 0.5, "max_length": 64})
+            # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature": 0.5, "max_length": 64})
             # https://python.langchain.com/docs/integrations/llms/huggingface_hub
             
             # gpt-4
-            llm = OpenAI(model_name='gpt-3.5-turbo')
+            # llm = OpenAI(model_name='davinci-002')
+            # llm = OpenAI(model_name='gpt-4-0314')
+            # https://platform.openai.com/docs/models/gpt-4
 
 
             chain = load_qa_chain(llm=llm, chain_type="stuff")
