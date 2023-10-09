@@ -24,6 +24,8 @@ from langchain.chains import LLMChain
 
 from langchain.llms import HuggingFaceHub
 
+from langchain.vectorstores import Milvus
+
 # Sidebar contents
 with st.sidebar:
     st.title('Chatbot of Performix')
@@ -37,30 +39,45 @@ with st.sidebar:
  
     ''')
     add_vertical_space(5)
-    st.write('test version 1.1 created by Raymond')
+    st.write('test version 1.2 created by Raymond')
     
 
 
 def main():
     st.header("Customized Chatbot with PDF files")
 
+
     load_dotenv()
     
 
     # upload the pdf files:
-    pdf = st.file_uploader("Please upload your PDF files:", type='pdf')
+    pdffiles = st.file_uploader("Please upload your PDF files:", type='pdf', accept_multiple_files=True)
     # st.write(pdf.name)
 
-    # check if pdf is exist
-    if pdf is not None:
+    # Initialize session state
+    if 'process_button_clicked' not in st.session_state:
+        st.session_state.process_button_clicked = False
 
-        pdf_reader = PdfReader(pdf)
-        # st.write(pdf_reader.outline)
+    # Create a button
+    process_button = st.button("Process")
+
+    if pdffiles is not None and process_button:
+        st.session_state.process_button_clicked = True
+    # if st.button("Process"):
+        # with st.spinner("Processing"):
+            # st.write(pdf_reader.outline)
+    if st.session_state.process_button_clicked:
         text =""
-        for page in pdf_reader.pages:
-            text += page.extract_text()
+        pdfname = []
+        for pdf in pdffiles:
+            pdf_reader = PdfReader(pdf)
+            for page in pdf_reader.pages:
+                text += page.extract_text()
+            pdfname.append(pdf.name[:-4])
+            
+        
 
-        st.write(text)
+        # st.write(text)
 
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
@@ -72,14 +89,17 @@ def main():
         
         chunks = text_splitter.split_text(text=text)
 
+        # below is for milvus
+        # chunks = text_splitter.create_documents(text)
+
         st.write(chunks)
 
         # embeddings
         # embeddings = OpenAIEmbeddings()
 
         # VectorStore = FAISS.from_texts(chunks, embedding= embeddings)
-        store_name = pdf.name[:-4]
-        # st.write(store_name)
+        store_name = str(pdfname)
+        st.write(store_name)
 
 
         # save the vectorStore as a pickle file
@@ -92,6 +112,7 @@ def main():
             st.write("embedding loaded from local")
         else:
             embeddings = OpenAIEmbeddings()
+            # VectorStore = Milvus.from_documents(documents=chunks, embedding= embeddings, connection_args={"host": 'localhost', "port": "8501"})
             VectorStore = FAISS.from_texts(chunks, embedding= embeddings)
 
             with open(f"{store_name}.pkl", "wb") as f:
@@ -108,7 +129,7 @@ def main():
             st.session_state.responses = []
 
         if query:
-            docs = VectorStore.similarity_search(query=query,  k=3)
+            docs = VectorStore.similarity_search(query=query,  k=10, fetch_k=20)
             # Here is an example of how to set fetch_k parameter when calling similarity_search. 
             # Usually you would want the fetch_k parameter >> k parameter. 
             # This is because the fetch_k parameter is the number of documents that will be fetched before filtering. 
@@ -120,7 +141,7 @@ def main():
             # fetch_k=4, k=1
             # check the filter arg
 
-            llm = OpenAI(model_name='gpt-3.5-turbo')
+            llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0)
             
             # hugging face
             # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature": 0.5, "max_length": 64})
@@ -142,115 +163,12 @@ def main():
                 st.session_state.prompts.append(query)
                 st.session_state.responses.append(response)
             # st.write(response)
-          
+        
         if st.session_state.responses:
             for i in range(len(st.session_state.responses)-1, -1, -1):
                 
                 message(st.session_state.prompts[i], is_user=True, key=str(i) + '_user', avatar_style="adventurer",seed=77)
                 message(st.session_state.responses[i], key=str(i), avatar_style="funEmoji", seed='Aneka')
-
-        
-
-
-        # resp_text = []
-        # resp_text.append(response)
-
-        # st.write("previously asked question:")
-        # st.write(resp_text)
-
-        # if 'prompts' not in st.session_state:
-        #     st.session_state.prompts = []
-        # if 'responses' not in st.session_state:
-        #     st.session_state.responses = []
-        # def send_click():
-        #     if st.session_state.user != '':
-        #         prompt = st.session_state.user
-        #         if prompt:
-        #             docs = knowledge_base.similarity_search(prompt)
-        #         llm = OpenAI()
-        #         chain = load_qa_chain(llm, chain_type="stuff")
-        #         with get_openai_callback() as cb:
-        #             response = chain. run(input_documents=docs, question=prompt)
-        #         st.session_state.prompts.append(prompt)
-        #         st.session_state.responses.append(response)
-
-        # hard code questions:
-    #     examples = [
-    # {
-    #     "query": "Is there any victim dead?",
-    #     "answer": "No"
-    # },
-    # {
-    #     "query": "How many people injured?",
-    #     "answer": "8"
-    # },
-    # {
-    #     "query": "How many teenager injured?",
-    #     "answer": "5"
-    # },
-    # {
-    #     "query": "Which city did this shooting happen?",
-    #     "answer": "Minneapolis"
-    # },
-    # {
-    #     "query": "who is Mahmoud Elmi?",
-    #     "answer": "a small grocery owner"
-    # },
-    # {
-    #     "query": "who is Mahmoud Elmi?",
-    #     "answer": "a small grocery owner"
-    # },
-    # {
-    #     "query": "Is there a gun shot murder according to Susan Solarz",
-    #     "answer": "No"
-    # },
-    # {
-    #     "query": "Which date did the shoot happen",
-    #     "answer": "AUGUST 20, 2023"
-    # },
-    # {
-    #     "query": "Which news agency contribute to this report",
-    #     "answer": "CBS MINNESOTA and WCCO"
-    # }
-
-    #         ]
-
-    #     st.write(examples)    
-    #     print(examples)
-    #     # example_gen_chain = QAGenerateChain.from_llm(ChatOpenAI())
-    #     # # new_examples = example_gen_chain.apply_and_parse(VectorStore)
-
-    #     llm = ChatOpenAI(model_name='gpt-3.5-turbo')
-    #     # chain = LLMChain(llm=llm, chain_type="stuff")
-    #     # chain = load_qa_chain(llm=llm, chain_type="stuff")
-
-        
-
-    #     # st.write(examples[0]["answer"])
-    #     query = examples[0]["query"]
-    #     docs = VectorStore.similarity_search(query=query, k=3)
-
-    #     response = chain.apply(input_documents=docs, question=query)
-    #     print(response)
-
-      
-
-    #     from langchain.evaluation.qa import QAEvalChain
-    #     llm = ChatOpenAI(temperature=0)
-    #     eval_chain = QAEvalChain.from_llm(llm)
-    #     predictions = chain.apply(question=query, input_documents=docs)
-
-      
-
-    #     graded_outputs = eval_chain.evaluate(examples[0]["answer"], response)
-
-
-
-
-    
-
-        
-
 
 
 
