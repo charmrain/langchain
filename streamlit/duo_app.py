@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import string
+from pathlib import Path
 
 # Set up logging
 log_folder = "log_doc"
@@ -178,9 +179,18 @@ def main():
             store_name = str(pdfname)
             st.write(store_name)
 
+            # Get the path to the folder for saving pickle files
+            pickle_folder = Path("pickle_files")
 
-            if os.path.exists(f"{store_name}.pkl"):
-                with open(f"{store_name}.pkl", "rb") as f:
+            # Create the folder if it doesn't exist
+            pickle_folder.mkdir(exist_ok=True)
+
+            # Generate the file path for the pickle file within the folder
+            pickle_file_path = pickle_folder / f"{store_name}.pkl"
+
+
+            if os.path.exists(pickle_file_path):
+                with open(pickle_file_path, "rb") as f:
                     VectorStore = pickle.load(f)
                 st.write("embedding loaded from local")
             else:
@@ -188,7 +198,7 @@ def main():
                 # VectorStore = Milvus.from_documents(documents=chunks, embedding= embeddings, connection_args={"host": 'localhost', "port": "8501"})
                 VectorStore = FAISS.from_texts(chunks, embedding= embeddings)
 
-                with open(f"{store_name}.pkl", "wb") as f:
+                with open(pickle_file_path, "wb") as f:
                     pickle.dump(VectorStore, f)
                 st.write("embedding is computed from server")
 
