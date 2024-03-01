@@ -92,9 +92,7 @@ with st.sidebar:
     st.markdown('''
     ## About
     This app is an LLM-powered chatbot built using:
-    - [Streamlit](https://streamlit.io/)
-    - [LangChain](https://python.langchain.com/)
-    - [OpenAI](https://platform.openai.com/docs/models) LLM model
+ 
     - [Performix](https://www.performixbiz.com/) company homepage
     - [Resource Folder](https://drive.google.com/drive/folders/1lwLGA9B4nzSZ82wBoEndhHjVlUkhXMkh?usp=drive_link)
  
