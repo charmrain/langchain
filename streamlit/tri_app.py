@@ -13,8 +13,6 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks import get_openai_callback
 from streamlit_chat import message
 from langchain.chat_models import ChatOpenAI
-from langchain.chains import LLMChain
-
 import logging
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -153,33 +151,6 @@ def load_multi_html():
         return None, None
 
 
-    # if url is not None:
-    #     # Check if the URL contains a scheme, if not, add 'http://'
-    #     if not url.startswith(('http://', 'https://')):
-    #         url = 'http://' + url
-
-    #     # df = pd.read_excel(uploaded_file)
-    #     st.write("Data loaded from HTML:")
-    #     try:
-    #         source = requests.get(url).text
-    #         soup = BeautifulSoup(source, 'html.parser')
-
-    #         links = soup.find_all('a')
-    #         hyperlinks = [urljoin(url, link.get('href')) for link in links if link.get('href') and is_valid_link(link.get('href'))]
-
-
-
-    #         main_text = soup.get_text()
-    #         pdfname = []
-    #         valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-    #         url_filename = ''.join(c if c in valid_chars else '_' for c in url)
-    #         pdfname.append(url_filename)
-    #         # st.write(df)
-    #         return main_text, pdfname
-    #     except Exception as e:
-    #         st.write(f"Error loading HTML content from the provided URL: {str(e)}")
-    #         return None, None
-
 
 
 # Sidebar contents
@@ -195,7 +166,7 @@ with st.sidebar:
  
     ''')
     add_vertical_space(5)
-    st.write('test version 2.0e created by Raymond')
+    st.write('test version 3.0a created by Raymond')
     st.write('STATUS: Log in as flame, then systemctl --user status chatai')
     st.write('LOG: journalctl --user -u chatai | less')
     
