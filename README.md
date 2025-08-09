@@ -39,7 +39,7 @@ This project started as a simple PDF Q&A tool and has grown into a multi-source,
 
 ```bash
 # Clone the repository
-git clone https://github.com/charmrain/langchain.git
+git clone https://github.com/charmrain/pdf-web-qa-bot.git
 cd langchain/streamlit
 
 ## Usage
