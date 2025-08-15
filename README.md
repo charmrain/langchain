@@ -49,5 +49,5 @@ streamlit run app.py
 # Version 2: Multiple PDFs
 streamlit run chatai_lite.py
 
-# Version 3: PDF + Website
+# Version 3: PDFs + Website
 streamlit run tri_app.py
